@@ -1,0 +1,28 @@
+{
+  "version": "1.0.0",
+  "platform": ["win32"],
+  "pluginName": "vmware开启助手",
+  "description": "开始开启本地虚拟机",
+  "preload": "preload.js",
+  "logo": "logo.png",
+  "features": [
+    {
+      "platform": ["win32"],
+      "code": "vmware_init",
+      "explain": "初始化vmware插件",
+      "cmds": ["vmware_init", "vminit", "vmware插件设置"]
+    },
+    {
+      "platform": ["win32"],
+      "code": "vmware_open",
+      "explain": "选择虚拟机并打开",
+      "cmds": ["vmware","vmware_open", "vmopen"]
+    },
+    {
+      "platform": ["win32"],
+      "code": "vmware_run",
+      "explain": "选择虚拟机并启动",
+      "cmds": ["vmware_run", "vmrun"]
+    }
+  ]
+}
