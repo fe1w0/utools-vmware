@@ -18,29 +18,18 @@ var vmwareObject = {
 var dbVmxDirectories = ''
 var dbVmwarePath = ''
 
-function setVmwarePath(dirInput){
+function setVmwarePath(dirInput=''){
   /*
     当默认配置文件下,没有查询到 vmware.exe 地址时,改为用户 手动设置
   */
- if(dirInput != ''){
-  try{
-    // 默认为第一次写入数据库
-    utools.db.put({
-      _id: 'dbVmwarePath',
-      data: dirInput,
-    })
-  }catch(e){
-    utools.db.put({
-      _id: 'dbVmwarePath',
-      data: vdirInput,
-      _rev: dbVmwarePath._rev
-    })
+ 
+  if(dirInput != ''){
+    utools.dbStorage.setItem('dbVmwarePath', dirInput)
   }
- }
 }
 
 
-function setVmxDirectories(dirInput){
+function setVmxDirectories(dirInput=''){
   /*
   根据 dirInput 设置 vmxDirectories,分号作为目录分割
    */
@@ -50,19 +39,12 @@ function setVmxDirectories(dirInput){
     vmwareObject.vmxDirectories.push(tmpVmxDirectory);
   });
   // 将 dbVmxDirectories 保存在db数据库中
-  dbVmxDirectories = utools.db.get('dbVmxDirectories')
-  if (dbVmxDirectories && dbVmxDirectories.data !== dirInput && dirInput != '') {
-    utools.db.put({
-      _id: 'dbVmxDirectories',
-      data: dirInput,
-      _rev: dbVmxDirectories._rev
-    })
+  dbVmxDirectories = utools.dbStorage.getItem('dbVmxDirectories')
+  if (dbVmxDirectories !== dirInput && dirInput != '') {
+    utools.dbStorage.setItem('dbVmxDirectories', dirInput)
   }
-  else if (dbVmxDirectories === null) {
-    utools.db.put({
-      _id: 'dbVmxDirectories',
-      data: dirInput,
-    })
+  else if (dbVmxDirectories == '') {
+    utools.dbStorage.setItem('dbVmxDirectories', dirInput)
   }
   vmxScan(vmwareObject.vmxDirectories);
 }
@@ -79,13 +61,10 @@ function searchVmwarePath(){
   }catch(e){
     vmwareObject.vmwarePath = '' // 未找到默认配置文件
   }
-  dbVmwarePath = utools.db.get('dbVmwarePath')
+  dbVmwarePath = utools.dbStorage.getItem('dbVmwarePath') // 没有时, return null
   if (dbVmwarePath == null && vmwareObject.vmwarePath != '') {
     // dbVmwarePath 查询为空时，将默认地址保存到数据库
-    utools.db.put({
-      _id: 'dbVmwarePath',
-      data: vmwareObject.vmwarePath,
-    })
+    utools.dbStorage.setItem('dbVmwarePath', vmwareObject.vmwarePath)
   }
 }
 
@@ -117,7 +96,7 @@ function vmwareOpen(vmxPath){
   /*
   以open的方法打开 被选择的虚拟机, -p
    */
-  let execCmd = utools.db.get('dbVmwarePath').data + ' -p "' + vmxPath + '"';
+  let execCmd = utools.dbStorage.getItem('dbVmwarePath') + ' -p "' + vmxPath + '"';
   utools.showNotification(vmxPath + '打开中')
   nodeCmd.run(execCmd)
   windows.utools.outPlugin()
@@ -127,7 +106,7 @@ function vmwareRun(vmxPath){
   /*
   以run的方法打开 被选择的虚拟机, -x
    */
-  let execCmd = utools.db.get('dbVmwarePath').data + ' -x "' + vmxPath + '"';
+  let execCmd = utools.dbStorage.getItem('dbVmwarePath') + ' -x "' + vmxPath + '"';
   utools.showNotification(vmxPath + '开启中')
   nodeCmd.run(execCmd)
   windows.utools.outPlugin()
@@ -144,7 +123,7 @@ utools.onPluginReady(() => {
   searchVmwarePath();
   // 添加异常处理，防止utools报错
   try{
-    dbVmxDirectories = utools.db.get('dbVmxDirectories').data;
+    dbVmxDirectories = utools.dbStorage.getItem('dbVmxDirectories')
   }catch(e){
     dbVmxDirectories = ''
   }
@@ -180,13 +159,21 @@ function SearchVmxPath(searchWord){
 }
 
 const SettingUI = () => {
-  dbVmxDirectories = utools.db.get('dbVmxDirectories').data;
-  dbVmwarePath = utools.db.get('dbVmwarePath').data;
+  dbVmxDirectories = utools.dbStorage.getItem('dbVmxDirectories')
+  dbVmwarePath = utools.dbStorage.getItem('dbVmwarePath')
   let submit = () => {
-    let vmxDir = document.getElementById('vmxDir');
-    let vmwarePath =  document.getElementById('vmwarePath');
-    setVmwarePath(vmwarePath.value)
-    setVmxDirectories(vmxDir.value)
+    try{
+      let vmxDir = document.getElementById('vmxDir')
+      setVmxDirectories(vmxDir.value)
+    }catch(e){
+      // 
+    }
+    try{
+      let vmwarePath =  document.getElementById('vmwarePath');
+      setVmwarePath(vmwarePath.value)
+    }catch(e){
+      // 
+    }
     // window.utools.hideMainWindow()
     utools.showNotification('设置完成')
     setTimeout(() => {
