@@ -25,3 +25,4 @@ utools插件: 快速开启虚拟机
 
 感谢 [lanyuanxiaoyao](https://yuanliao.info/u/lanyuanxiaoyao)、u_tools的帮助
 
+1.0.4 修复之前 1.0.3 版上 vminit 手动添加 vmware地址后,页面依旧没有显示设置的 vmware地址,以及 vmopne和vmrun 无法使用的问题

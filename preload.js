@@ -6,16 +6,38 @@ const encoding = 'cp936';
 const binaryEncoding = 'binary';
 const fs = require('fs');
 const path = require('path');
-
+const nodeCmd=require('node-cmd');
 
 
 var vmwareObject = {
   vmwarePath: '',
   vmxDirectories: [],
   vmxPathList: []
-};
+}
 
-var dbVmxDirectories = '';
+var dbVmxDirectories = ''
+var dbVmwarePath = ''
+
+function setVmwarePath(dirInput){
+  /*
+    当默认配置文件下,没有查询到 vmware.exe 地址时,改为用户 手动设置
+  */
+ if(dirInput != ''){
+  try{
+    // 默认为第一次写入数据库
+    utools.db.put({
+      _id: 'dbVmwarePath',
+      data: dirInput,
+    })
+  }catch(e){
+    utools.db.put({
+      _id: 'dbVmwarePath',
+      data: vdirInput,
+      _rev: dbVmwarePath._rev
+    })
+  }
+ }
+}
 
 
 function setVmxDirectories(dirInput){
@@ -25,11 +47,11 @@ function setVmxDirectories(dirInput){
   vmwareObject.vmxDirectories = [] // 清空 vmwareObject.vmxDirectories
   let tmpVmxDirectories = dirInput.split(';');
   tmpVmxDirectories.forEach(function (tmpVmxDirectory){
-    vmwareObject.vmxDirectories.push(tmpVmxDirectory.replace(/(^s*)|(s*$)/g, ""));
+    vmwareObject.vmxDirectories.push(tmpVmxDirectory);
   });
   // 将 dbVmxDirectories 保存在db数据库中
-  var dbVmxDirectories = utools.db.get('dbVmxDirectories')
-  if (dbVmxDirectories && dbVmxDirectories.data !== dirInput) {
+  dbVmxDirectories = utools.db.get('dbVmxDirectories')
+  if (dbVmxDirectories && dbVmxDirectories.data !== dirInput && dirInput != '') {
     utools.db.put({
       _id: 'dbVmxDirectories',
       data: dirInput,
@@ -49,10 +71,22 @@ function searchVmwarePath(){
   /*
    寻找 vmware.exe地址
   */
-  let VmwareConfigPath = 'C:\\ProgramData\\VMware\\hostd\\config.xml';
-  let configRegx =  /<defaultInstallPath> (.+?) </;
-  let configContent = fs.readFileSync(VmwareConfigPath).toString();
-  vmwareObject.vmwarePath = configRegx.exec(configContent)[1] + 'vmware.exe';
+  try{
+    let VmwareConfigPath = 'C:\\ProgramData\\VMware\\hostd\\config.xml';
+    let configRegx =  /<defaultInstallPath> (.+?) </;
+    let configContent = fs.readFileSync(VmwareConfigPath).toString();
+    vmwareObject.vmwarePath = configRegx.exec(configContent)[1] + 'vmware.exe';
+  }catch(e){
+    vmwareObject.vmwarePath = '' // 未找到默认配置文件
+  }
+  dbVmwarePath = utools.db.get('dbVmwarePath')
+  if (dbVmwarePath == null && vmwareObject.vmwarePath != '') {
+    // dbVmwarePath 查询为空时，将默认地址保存到数据库
+    utools.db.put({
+      _id: 'dbVmwarePath',
+      data: vmwareObject.vmwarePath,
+    })
+  }
 }
 
 
@@ -64,7 +98,7 @@ function vmxScan(vmxDirectories){
   let tmpVmxPathString = '';
   let vmxRegx = /(.+)\n/g;
   vmxDirectories.forEach(function (vmxDirectory){
-    let searchCmd = 'for /r '+ vmxDirectory +' %i in (*.vmx) do @echo %i';
+    let searchCmd = 'for /r "'+ vmxDirectory +'" %i in (*.vmx) do @echo %i';
     let searchExec = childProcess.execSync(
         searchCmd,
         {encoding: binaryEncoding});
@@ -83,33 +117,18 @@ function vmwareOpen(vmxPath){
   /*
   以open的方法打开 被选择的虚拟机, -p
    */
-  let execCmd = vmwareObject.vmwarePath + ' -p "' + vmxPath + '"';
-  let execRes = childProcess.exec(execCmd, function (error, stdout, stderr) {
-    if (error) {
-      console.log(error.stack);
-      console.log('Error code: '+error.code);
-      console.log('Signal received: '+error.signal);
-    }
-    console.log('stdout: ' + stdout);
-    console.log('stderr: ' + stderr);
-  }).toString();
-  
+  let execCmd = utools.db.get('dbVmwarePath').data + ' -p "' + vmxPath + '"';
+  utools.showNotification(vmxPath + '打开中')
+  nodeCmd.runSync(execCmd)
 }
 
 function vmwareRun(vmxPath){
   /*
   以run的方法打开 被选择的虚拟机, -x
    */
-  let execCmd = vmwareObject.vmwarePath + ' -x "' + vmxPath + '"';
-  let execRes = childProcess.exec(execCmd,function (error, stdout, stderr) {
-    if (error) {
-      console.log(error.stack);
-      console.log('Error code: '+error.code);
-      console.log('Signal received: '+error.signal);
-    }
-    console.log('stdout: ' + stdout);
-    console.log('stderr: ' + stderr);
-  }).toString();
+  let execCmd = utools.db.get('dbVmwarePath').data + ' -x "' + vmxPath + '"';
+  utools.showNotification(vmxPath + '开启中')
+  nodeCmd.runSync(execCmd)
 }
 
 
@@ -122,7 +141,12 @@ utools.onPluginReady(() => {
   4. vmxScan()
    */
   searchVmwarePath();
-  dbVmxDirectories = utools.db.get('dbVmxDirectories').data;
+  // 添加异常处理，防止utools报错
+  try{
+    dbVmxDirectories = utools.db.get('dbVmxDirectories').data;
+  }catch(e){
+    dbVmxDirectories = ''
+  }
   setVmxDirectories(dbVmxDirectories);
 })
 
@@ -156,13 +180,16 @@ function SearchVmxPath(searchWord){
 
 const SettingUI = () => {
   dbVmxDirectories = utools.db.get('dbVmxDirectories').data;
+  dbVmwarePath = utools.db.get('dbVmwarePath').data;
   let submit = () => {
-    let vmxDir = document.getElementById("vmxDir");
-    setVmxDirectories(vmxDir.value);
+    let vmxDir = document.getElementById('vmxDir');
+    let vmwarePath =  document.getElementById('vmwarePath');
+    setVmwarePath(vmwarePath.value)
+    setVmxDirectories(vmxDir.value)
     // window.utools.hideMainWindow()
-    utools.showNotification("设置完成")
+    utools.showNotification('设置完成')
     setTimeout(() => {
-      utools.redirect("vmopen",'')
+      utools.redirect('vmopen','')
     }, 200);
   }
   return jsx`
@@ -176,10 +203,16 @@ const SettingUI = () => {
   <form id="vmsetting">
     <fieldset>
         <legend>虚拟机地址设置</legend>
-        <p>请输入虚拟机地址设置,用分号进行分割,如 "E:\\VM\\;G:\\VM\\" </p>
-        <p>当前虚拟机地址为: ${dbVmxDirectories}</p>
-        <label for="stacked-email">虚拟机地址:</label>
+        <p>请输入虚拟机地址设置,用分号进行分割,如 "E:\\VM\\;G:\\VM\\".</p>
+        <p>地址选择适当的大小，如G:\\VM\\下有多台虚拟机，可以直接设置 G:\\VM\\</p>
+        <p>当前虚拟机地址为:    ${dbVmxDirectories}</p>
+        <label>虚拟机地址:</label>
         <input name="vmxDir" id="vmxDir" type="text" placeholder="请输入地址" />
+        <p>当前 vmware.exe 地址为:    ${dbVmwarePath}</p>
+        <p>若未能通过配置文件找到 vmware.exe 文件地址,可在下面输入框中输入地址</p>
+        <p>如 "F:\\VMware\\vmware.exe",其中"F:\\VMware\\"为vmware的安装地址</p>
+        <label> vmware.exe 地址:  </label>
+        <input name="vmwarePath" id="vmwarePath" type="text" placeholder="请输入地址" />
         <div style="text-align: center">
           <button type="submit" onclick=${() => submit()}>保存</button>
         </div>
@@ -200,7 +233,7 @@ window.exports = {
     mode: 'none',
     args: {
       enter(action, callback) {
-        utools.setExpendHeight(180)
+        utools.setExpendHeight(327)
         Nano.render(jsx`${SettingUI}`, document.documentElement)
       }
     }
@@ -209,18 +242,17 @@ window.exports = {
     mode: 'list',
     args: {
       enter: (action, callbackSetList) => {
-        document.getElementById("vmsetting")?.remove()
+        document.getElementById('vmsetting')?.remove()
         callbackSetList(ListAllVmxPath());
       },
       search: (action, searchWord, callbackSetList) => {
-        document.getElementById("vmsetting")?.remove()
+        document.getElementById('vmsetting')?.remove()
         callbackSetList(SearchVmxPath(searchWord))
       },
       select: (action, itemData) => {
-        document.getElementById("vmsetting")?.remove()
+        document.getElementById('vmsetting')?.remove()
         // itemData 为被选择的数据项
         window.utools.hideMainWindow()
-        utools.showNotification(itemData.title + '打开中')
         vmwareOpen(itemData.description)
         window.utools.outPlugin()
       },
@@ -231,18 +263,17 @@ window.exports = {
     mode: 'list',
     args: {
       enter: (action, callbackSetList) => {
-        document.getElementById("vmsetting")?.remove()
+        document.getElementById('vmsetting')?.remove()
         callbackSetList(ListAllVmxPath());
       },
       search: (action, searchWord, callbackSetList) => {
-        document.getElementById("vmsetting")?.remove()
+        document.getElementById('vmsetting')?.remove()
         callbackSetList(SearchVmxPath(searchWord))
       },
       select: (action, itemData) => {
-        document.getElementById("vmsetting")?.remove()
+        document.getElementById('vmsetting')?.remove()
         // itemData 为被选择的数据项
         window.utools.hideMainWindow()
-        utools.showNotification(itemData.title + '开启中')
         vmwareRun(itemData.description)
         window.utools.outPlugin()
       },
