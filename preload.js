@@ -120,6 +120,7 @@ function vmwareOpen(vmxPath){
   let execCmd = utools.db.get('dbVmwarePath').data + ' -p "' + vmxPath + '"';
   utools.showNotification(vmxPath + '打开中')
   nodeCmd.runSync(execCmd)
+  utools.outPlugin()
 }
 
 function vmwareRun(vmxPath){
@@ -129,8 +130,8 @@ function vmwareRun(vmxPath){
   let execCmd = utools.db.get('dbVmwarePath').data + ' -x "' + vmxPath + '"';
   utools.showNotification(vmxPath + '开启中')
   nodeCmd.runSync(execCmd)
+  utools.outPlugin()
 }
-
 
 utools.onPluginReady(() => {
   /*
@@ -254,7 +255,6 @@ window.exports = {
         // itemData 为被选择的数据项
         window.utools.hideMainWindow()
         vmwareOpen(itemData.description)
-        window.utools.outPlugin()
       },
       placeholder: '虚拟机列表'
     }
@@ -275,7 +275,6 @@ window.exports = {
         // itemData 为被选择的数据项
         window.utools.hideMainWindow()
         vmwareRun(itemData.description)
-        window.utools.outPlugin()
       },
       placeholder: '虚拟机列表'
     }
