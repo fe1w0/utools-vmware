@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.3",
   "platform": ["win32"],
   "pluginName": "vmware开启助手",
   "description": "开始开启本地虚拟机",
