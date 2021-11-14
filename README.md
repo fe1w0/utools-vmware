@@ -1,4 +1,7 @@
 # utools-wmare
+> 该项目短期不在维护,待我有空学一下vue,重新设计一下
+>
+
 utools插件: 快速开启虚拟机
 
 项目地址: [https://github.com/fe1w0/utools-vmware](https://github.com/fe1w0/utools-vmware)
