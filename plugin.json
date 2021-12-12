@@ -1,8 +1,8 @@
 {
   "version": "1.0.6",
   "platform": ["win32"],
-  "pluginName": "vmware开启助手",
-  "description": "开始开启本地虚拟机",
+  "pluginName": "vmware启动助手",
+  "description": "打开|开启|关闭本地虚拟机",
   "preload": "preload.js",
   "logo": "logo.png",
   "features": [
@@ -10,7 +10,7 @@
       "platform": ["win32"],
       "code": "vmware_init",
       "explain": "初始化vmware插件",
-      "cmds": ["vmware_init", "vminit", "vmware插件设置"]
+      "cmds": ["vmware_init", "vminit", "vmware插件初始化"]
     },
     {
       "platform": ["win32"],
@@ -23,6 +23,12 @@
       "code": "vmware_run",
       "explain": "选择虚拟机并启动",
       "cmds": ["vmware_run", "vmrun"]
+    },
+    {
+      "platform": ["win32"],
+      "code": "vmware_stop",
+      "explain": "选择虚拟机并关闭",
+      "cmds": ["vmware_stop", "vmstop"]
     }
   ]
 }
