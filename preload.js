@@ -156,7 +156,19 @@ function vmwareRun(vmxPath){
   nodeCmd.run(execCmdVmrun)
   windows.utools.outPlugin()
 }
-
+function vmwareStop(vmxPath){
+  /*
+  以 vmrun 关闭虚拟机
+   */
+  let execCmdTmp = '"' + utools.dbStorage.getItem('dbVmwarePath') + 'vmrun.exe"' + ' stop "' + vmxPath
+  let execCmdVmrun = vmwareObject.isBack ? execCmdTmp + '" nogui' :  execCmdTmp + '" gui'
+  if(vmwareObject.isNotified == 'checked'){
+    message = vmwareObject.isBack ? vmxPath + '打开中(nogui)' : vmxPath + '打开中(gui)'
+    utools.showNotification(message)
+  }
+  nodeCmd.run(execCmdVmrun)
+  windows.utools.outPlugin()
+}
 utools.onPluginReady(() => {
   /*
   首次插件启动时：
@@ -188,7 +200,6 @@ function ListAllVmxPath(){
   })
   return vmwarePathList; 
 }
-
 
 function SearchVmxPath(searchWord){
   /*
@@ -323,6 +334,26 @@ window.exports = {
         window.utools.hideMainWindow()
         vmwareRun(itemData.description)
         },
+      placeholder: '虚拟机列表'
+    }
+  },
+  'vmware_stop': {
+    mode: 'list',
+    args: {
+      enter: (action, callbackSetList) => {
+        document.getElementById('vmsetting')?.remove()
+        callbackSetList(ListAllVmxPath());
+      },
+      search: (action, searchWord, callbackSetList) => {
+        document.getElementById('vmsetting')?.remove()
+        callbackSetList(SearchVmxPath(searchWord))
+      },
+      select: (action, itemData) => {
+        document.getElementById('vmsetting')?.remove()
+        // itemData 为被选择的数据项
+        window.utools.hideMainWindow()
+        vmwareStop(itemData.description)
+      },
       placeholder: '虚拟机列表'
     }
   }
