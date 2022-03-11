@@ -1,0 +1,26 @@
+{
+  "name": "utools-vmware",
+  "version": "1.0.0",
+  "description": "utools插件: 快速开启虚拟机",
+  "main": "preload.js",
+  "dependencies": {
+    "iconv-lite": "^0.6.3",
+    "layui": "^2.6.8",
+    "node-cmd": "^5.0.0",
+    "utools-api-types": "^2.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fe1w0/utools-vmware.git"
+  },
+  "author": "fe1w0",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/fe1w0/utools-vmware/issues"
+  },
+  "homepage": "https://github.com/fe1w0/utools-vmware#readme"
+}
