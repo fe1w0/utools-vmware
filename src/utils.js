@@ -71,7 +71,7 @@ function vmwareOpen(vmxPath) {
       if(vmwareObject.isNotificationBar == 'checked'){
           utools.showNotification(vmxPath + '打开中')
       }
-      childProcess.execSync(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
+      childProcess.exec(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
     }catch(e){
       console.log("Error: vmwareOpen")
     }
@@ -89,7 +89,7 @@ function vmwareRun(vmxPath) {
         message = vmwareObject.isBackground ? vmxPath + '打开中(nogui)' : vmxPath + '打开中(gui)'
         utools.showNotification(message)
       }
-      childProcess.execSync(execCmdVmrun, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
+      childProcess.exec(execCmdVmrun, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
     } catch (e) {
       console.log("Error: vmwareRun")
     }
@@ -104,7 +104,7 @@ function vmwareStop(vmxPath) {
       if(vmwareObject.isNotificationBar == 'checked'){
           utools.showNotification(vmxPath + '关闭中')
       }
-      childProcess.execSync(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
+      childProcess.exec(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
     } catch(e) {
       console.log("Error: vmwareStop")
     }
@@ -117,7 +117,7 @@ function vmwareSuspend(vmxPath){
     if(vmwareObject.isNotificationBar == 'checked'){
         utools.showNotification(vmxPath + '挂起中')
     }
-    childProcess.execSync(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
+    childProcess.exec(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
   } catch(e) {
     console.log("Error: vmwareSuspend")
   }

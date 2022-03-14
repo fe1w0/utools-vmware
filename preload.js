@@ -71,27 +71,27 @@ window.exports = {
         window.utools.hideMainWindow()
         utils.vmwareStop(itemData.description)
         },
-      placeholder: '虚拟机列表[运行中]'
+      placeholder: '虚拟机列表'
     },
-    'vmware_suspend': {
-      mode: 'list',
-      args: {
-        enter: (action, callbackSetList) => {
-          document.getElementById('settings')?.remove()
-          callbackSetList(utils.listAllLiveVmxPath());
+  },
+  'vmware_suspend': {
+    mode: 'list',
+    args: {
+      enter: (action, callbackSetList) => {
+        document.getElementById('settings')?.remove()
+        callbackSetList(utils.listAllLiveVmxPath());
+      },
+      search: (action, searchWord, callbackSetList) => {
+        document.getElementById('settings')?.remove()
+        callbackSetList(utils.searchLiveVmxPath(searchWord))
+      },
+      select: (action, itemData) => {
+        document.getElementById('settings')?.remove()
+        // itemData 为被选择的数据项
+        window.utools.hideMainWindow()
+        utils.vmwareSuspend(itemData.description)
         },
-        search: (action, searchWord, callbackSetList) => {
-          document.getElementById('settings')?.remove()
-          callbackSetList(utils.searchLiveVmxPath(searchWord))
-        },
-        select: (action, itemData) => {
-          document.getElementById('settings')?.remove()
-          // itemData 为被选择的数据项
-          window.utools.hideMainWindow()
-          utils.vmwareSuspend(itemData.description)
-          },
-        placeholder: '虚拟机列表[运行中]'
-      }
+      placeholder: '虚拟机列表'
     }
   }
 }
