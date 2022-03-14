@@ -3,13 +3,33 @@ const loadPlugin = require('./loadplugin')
 
 
 function settingUI() {
+    // 若之前已经 
     /*
     Ref:
     https://github.com/mohuishou/utools/blob/318802607f92f6aee45198d4996e36b4897c11b1/helper/src/config/setting.ts#L80
     */
+//    删除 settings 
+    let setting = document.querySelector("#settings");
+    if (setting) setting.remove();
     let body = document.querySelector("body");
     let layui = path.join(__dirname, "../node_modules/layui/dist/")
     let settings = document.createElement("div");
+
+    // 需要注意的是，当插件从后台到前台时，utools.onPluginReady 不会再次启动
+    // 添加 判断条件到 reset 中
+
+    loadPlugin.readUtoolsDB()
+    // \\ 的 BUG
+    let uiVmxDirectory = loadPlugin.vmwareObject.vmxDirectory.replaceAll("\\", "\\\\")
+    let uiVmProgramPath = loadPlugin.vmwareObject.vmProgramPath.replaceAll("\\", "\\\\")
+    let uiIsBackground = (loadPlugin.vmwareObject.isBackground === "true") ? true : false
+    let uiIsNotificationBar = (loadPlugin.vmwareObject.isNotificationBar === "true") ? true : false
+    console.log(`uiVmxDirectory:${uiVmxDirectory}`)
+    console.log(`uiVmProgramPath:${uiVmProgramPath}`)
+    console.log(uiIsBackground, uiIsNotificationBar)
+    console.log(`loadPlugin.vmwareObject.isNotificationBar:${loadPlugin.vmwareObject.isNotificationBar}`)
+    console.log(`loadPlugin.vmwareObject.isBackground:${loadPlugin.vmwareObject.isBackground}`)
+
     settings.innerHTML = `
         <link rel="stylesheet" href="${layui}css/layui.css"  media="all">
         <style>
@@ -103,19 +123,12 @@ function settingUI() {
         </div>
 
     `;
-    
     settings.setAttribute("id", "settings")
-    
     let layjs = document.createElement("script");
     layjs.type = "text/javascript";
     layjs.src = path.join(layui, "layui.js");
     layjs.id = "layui";
     settings.append(layjs);
-    
-    // \\ 的 BUG
-    let uiVmxDirectory = loadPlugin.vmwareObject.vmxDirectory.replaceAll("\\", "\\\\")
-    let uiVmProgramPath = loadPlugin.vmwareObject.vmProgramPath.replaceAll("\\", "\\\\")
-    console.log(`loadPlugin.vmwareObject.isNotificationBar:${loadPlugin.vmwareObject.isNotificationBar}`)
     let script = document.createElement("script");
     script.text = `
     document.querySelector("#layui").onload = () => {
@@ -123,14 +136,16 @@ function settingUI() {
             var element = layui.element;
         });
         layui.form.on("submit(config)", function (data) {
+            console.log("submit")
             window.updateConfig(data.field)
+            reFresh(data.field)
         });
 
         layui.form.val("vmware", {
             "vmxDirectory": "${uiVmxDirectory}",
             "vmProgramPath": "${uiVmProgramPath}",
-            "isBackground": ${loadPlugin.vmwareObject.isBackground},
-            "isNotificationBar": ${loadPlugin.vmwareObject.isNotificationBar},
+            "isBackground": ${uiIsBackground},
+            "isNotificationBar": ${uiIsNotificationBar}
         });
     };
     document.querySelector(".link-one").onclick = (e) => {
@@ -138,6 +153,23 @@ function settingUI() {
     }
     document.querySelector(".link-two").onclick = (e) => {
         utools.shellOpenExternal(e.target.getAttribute("href"))
+    }
+
+    function reFresh(data) {
+        console.log("reFresh")
+        console.log(data)
+        if (data.isBackground === "false") {
+            data.isBackground = false
+        }   
+        if (data.isNotificationBar === "false") {
+            data.isNotificationBar = false
+        }
+        layui.form.val("vmware", {
+            "vmxDirectory": data.vmxDirectory,
+            "vmProgramPath": data.vmProgramPath,
+            "isBackground": data.isBackground,
+            "isNotificationBar": data.isNotificationBar
+        });
     }
     `;
 
@@ -165,8 +197,9 @@ window.updateConfig = function(data) {
     };
 
     utools.dbStorage.setItem('isNotificationBar', data.isNotificationBar)
-    // utools.redirect('vmopen', '')
-    utools.showNotification('设置完成')
+    if (data.isNotificationBar == "true"){
+        utools.showNotification('设置完成')
+    }
     setTimeout(() => {
       utools.redirect('vmopen', '')
     }, 200);

@@ -5,7 +5,6 @@ const vmwareObject = loadPlugin.vmwareObject
 
 utools.onPluginReady(() => {
   loadPlugin.readUtoolsDB()
-  loadPlugin.checkParameter()
 });
 
 window.exports = {
@@ -22,6 +21,8 @@ window.exports = {
     mode: 'list',
     args: {
       enter: (action, callbackSetList) => {
+        loadPlugin.readUtoolsDB()
+        loadPlugin.checkParameter()
         callbackSetList(utils.listAllVmxPath());
       },
       search: (action, searchWord, callbackSetList) => {
@@ -39,6 +40,8 @@ window.exports = {
     mode: 'list',
     args: {
       enter: (action, callbackSetList) => {
+        loadPlugin.readUtoolsDB()
+        loadPlugin.checkParameter()
         document.getElementById('settings')?.remove()
         callbackSetList(utils.listAllVmxPath());
       },
@@ -59,6 +62,8 @@ window.exports = {
     mode: 'list',
     args: {
       enter: (action, callbackSetList) => {
+        loadPlugin.readUtoolsDB()
+        loadPlugin.checkParameter()
         document.getElementById('settings')?.remove()
         callbackSetList(utils.listAllLiveVmxPath());
       },

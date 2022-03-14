@@ -50,19 +50,9 @@ function checkParameter(){
     if (!vmwareObject.vmProgramPath) {
         setVmProgramPath()
     }
-    // 若 vmxDirectory 不空且 vmxDirectories 为空
-    // 从 vmxDirectory 获取 vmxDirectories 
-    if (vmwareObject.vmxDirectory && vmwareObject.vmxDirectories.length == 0) {
-        setVmxDirectories()
-    }
-    // 若 vmxPathList 为空，从 vmxDirectories 获取 setVmxPathList
-    if (vmwareObject.vmxPathList.length == 0) {
-        setVmxPathList()
-    }
-    if (vmwareObject.vmwareLivePathList.length == 0) {
-      setVmwareLivePathList()
-    }
-
+    setVmxDirectories()
+    setVmxPathList()
+    setVmwareLivePathList()
 }
 
 function setVmProgramPath() {
@@ -108,24 +98,26 @@ function setVmxPathList() {
           let searchResult = iconv.decode(new Buffer.from(searchExec.toString(), binaryEncoding), encoding);
           tmpVmxPathString = tmpVmxPathString + searchResult;
     });
-  }catch(e){
-    console.log(e)
-  }
   let tmpVmxPathList = tmpVmxPathString.split(/\r\n/);
   tmpVmxPathList.forEach(function (tmpVmxPath){
     if (tmpVmxPath && tmpVmxPath.endsWith(".vmx")){
       vmwareObject.vmxPathList.push(tmpVmxPath);
     }
   });
+  }catch(e){
+    return
+  }
 }
 
 
 
 function setVmwareLivePathList() {
   let searchCmd = `"${vmwareObject.vmProgramPath}\\vmrun.exe" list`
-  let searchExec = childProcess.execSync(
-  searchCmd,
-  {encoding: binaryEncoding, windowsHide: true});
+  try{
+    let searchExec = childProcess.execSync(
+      searchCmd,
+      {encoding: binaryEncoding, windowsHide: true});
+
   let searchResult = iconv.decode(new Buffer.from(searchExec.toString(), binaryEncoding), "UTF-8");
   let tmpVmxLivePathList = searchResult.split(/\r\n/);
   console.log(`searchResult: ${searchResult}`)
@@ -134,7 +126,11 @@ function setVmwareLivePathList() {
       vmwareObject.vmwareLivePathList.push(tmpVmxLivePath);
     }
   });
+  } catch(e){
+    return
+  }
 }
+
 
 module.exports = {
     binaryEncoding: binaryEncoding,

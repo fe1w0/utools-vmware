@@ -9,6 +9,9 @@ function listAllVmxPath() {
     /*
     利用 utools 列表列出信息
     */
+   // 1.0.9 按代码逻辑来说，应该不需要这个。。。。
+    document.getElementById('settings')?.remove()
+    
     console.log(`vmxPathList: ${vmwareObject.vmxPathList}`)
     let vmwarePathList = [];
     vmwareObject.vmxPathList.forEach(function (vmxPath){
