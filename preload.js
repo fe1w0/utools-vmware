@@ -21,8 +21,6 @@ window.exports = {
     mode: 'list',
     args: {
       enter: (action, callbackSetList) => {
-        loadPlugin.readUtoolsDB()
-        loadPlugin.checkParameter()
         callbackSetList(utils.listAllVmxPath());
       },
       search: (action, searchWord, callbackSetList) => {
@@ -40,8 +38,6 @@ window.exports = {
     mode: 'list',
     args: {
       enter: (action, callbackSetList) => {
-        loadPlugin.readUtoolsDB()
-        loadPlugin.checkParameter()
         document.getElementById('settings')?.remove()
         callbackSetList(utils.listAllVmxPath());
       },
@@ -62,8 +58,6 @@ window.exports = {
     mode: 'list',
     args: {
       enter: (action, callbackSetList) => {
-        loadPlugin.readUtoolsDB()
-        loadPlugin.checkParameter()
         document.getElementById('settings')?.remove()
         callbackSetList(utils.listAllLiveVmxPath());
       },
@@ -77,7 +71,27 @@ window.exports = {
         window.utools.hideMainWindow()
         utils.vmwareStop(itemData.description)
         },
-      placeholder: '虚拟机列表'
+      placeholder: '虚拟机列表[运行中]'
+    },
+    'vmware_suspend': {
+      mode: 'list',
+      args: {
+        enter: (action, callbackSetList) => {
+          document.getElementById('settings')?.remove()
+          callbackSetList(utils.listAllLiveVmxPath());
+        },
+        search: (action, searchWord, callbackSetList) => {
+          document.getElementById('settings')?.remove()
+          callbackSetList(utils.searchLiveVmxPath(searchWord))
+        },
+        select: (action, itemData) => {
+          document.getElementById('settings')?.remove()
+          // itemData 为被选择的数据项
+          window.utools.hideMainWindow()
+          utils.vmwareSuspend(itemData.description)
+          },
+        placeholder: '虚拟机列表[运行中]'
+      }
     }
   }
 }

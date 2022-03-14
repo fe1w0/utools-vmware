@@ -41,17 +41,22 @@ function readUtoolsDB() {
 
     vmwareObject.isNotificationBar = utools.dbStorage.getItem('isNotificationBar')
     vmwareObject.isNotificationBar == null ? vmwareObject.isNotificationBar = true : vmwareObject.isNotificationBar
-
+    // 若 vmProgramPath 空，自动获取VMWARE配置中的程序地址
+    if (!vmwareObject.vmProgramPath) {
+      setVmProgramPath()
+    }
 }
 
 
 function checkParameter(){
-    // 若 vmProgramPath 空，自动获取VMWARE配置中的程序地址
-    if (!vmwareObject.vmProgramPath) {
-        setVmProgramPath()
-    }
+    // vmwareObject.vmxDirectories 清空
+    vmwareObject.vmxDirectories = []
     setVmxDirectories()
+    // vmwareObject.vmxPathList 清空
+    vmwareObject.vmxPathList = []
     setVmxPathList()
+    // vmwareObject.vmwareLivePathList 清空
+    vmwareObject.vmwareLivePathList = [] 
     setVmwareLivePathList()
 }
 
@@ -70,13 +75,14 @@ function setVmProgramPath() {
       }
       if (vmwareObject.vmProgramPath != '') {
         // vmProgramPath 自动获取成功时，将默认地址保存到数据库
-        alert(vmwareObject.vmProgramPath)
+        // alert(vmwareObject.vmProgramPath)
         utools.dbStorage.setItem('vmProgramPath', vmwareObject.vmProgramPath)
       }
 }
 
 function setVmxDirectories() {
     // 设置 vmxDirectories ，从 vmxDirectory
+
     let dirInput = vmwareObject.vmxDirectory
     let tmpVmxDirectories = dirInput.split(';');
     tmpVmxDirectories.forEach(function (tmpVmxDirectory){
@@ -87,26 +93,27 @@ function setVmxDirectories() {
 function setVmxPathList() {
     // 若 vmxPathList 为空，从 vmxDirectories 获取 setVmxPathList
     // 扫描vmx文件,并将信息保存在内存
-  let tmpVmxPathString = '';
-  let tmpVmxDirectories = vmwareObject.vmxDirectories
-  try {
-    tmpVmxDirectories.forEach(function (vmxDirectory){
-      let searchCmd = 'for /r "'+ vmxDirectory +'" %i in (*.vmx) do @echo %i';
-      let searchExec = childProcess.execSync(
-          searchCmd,
-          {encoding: binaryEncoding, windowsHide: true});
-          let searchResult = iconv.decode(new Buffer.from(searchExec.toString(), binaryEncoding), encoding);
-          tmpVmxPathString = tmpVmxPathString + searchResult;
+    let tmpVmxPathString = '';
+    let tmpVmxDirectories = vmwareObject.vmxDirectories
+    console.log(`setVmxPathList vmwareObject.vmxDirectories: ${vmwareObject.vmxDirectories}`)
+    try {
+      tmpVmxDirectories.forEach(function (vmxDirectory){
+        let searchCmd = 'for /r "'+ vmxDirectory +'" %i in (*.vmx) do @echo %i';
+        let searchExec = childProcess.execSync(
+            searchCmd,
+            {encoding: binaryEncoding, windowsHide: true});
+            let searchResult = iconv.decode(new Buffer.from(searchExec.toString(), binaryEncoding), encoding);
+            tmpVmxPathString = tmpVmxPathString + searchResult;
+      });
+    let tmpVmxPathList = tmpVmxPathString.split(/\r\n/);
+    tmpVmxPathList.forEach(function (tmpVmxPath){
+      if (tmpVmxPath && tmpVmxPath.endsWith(".vmx")){
+        vmwareObject.vmxPathList.push(tmpVmxPath);
+      }
     });
-  let tmpVmxPathList = tmpVmxPathString.split(/\r\n/);
-  tmpVmxPathList.forEach(function (tmpVmxPath){
-    if (tmpVmxPath && tmpVmxPath.endsWith(".vmx")){
-      vmwareObject.vmxPathList.push(tmpVmxPath);
+    }catch(e){
+      return
     }
-  });
-  }catch(e){
-    return
-  }
 }
 
 

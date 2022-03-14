@@ -47,3 +47,5 @@ utools插件: 快速开启虚拟机
 1.0.7 修改settingUI , 添加vmstop, 以及修补issue (弹窗和无效指令问题)
 
 1.0.8 release 时忘记install node_modules了
+
+1.0.9 修复bug(UI)，以及添加挂起功能(vm_suspend)

@@ -30,8 +30,14 @@
     {
       "platform": ["win32"],
       "code": "vmware_stop",
-      "explain": "选择虚拟机并关闭",
+      "explain": "选择正在运行虚拟机并关闭",
       "cmds": ["vmware_stop", "vmstop"]
+    },
+    {
+      "platform": ["win32"],
+      "code": "vmware_suspend",
+      "explain": "选择正在运行虚拟机并挂起",
+      "cmds": ["vmware_suspend", "vmsuspend"]
     }
   ]
 }

@@ -9,9 +9,9 @@ function listAllVmxPath() {
     /*
     利用 utools 列表列出信息
     */
-   // 1.0.9 按代码逻辑来说，应该不需要这个。。。。
+   loadPlugin.readUtoolsDB()
+   loadPlugin.checkParameter()
     document.getElementById('settings')?.remove()
-    
     console.log(`vmxPathList: ${vmwareObject.vmxPathList}`)
     let vmwarePathList = [];
     vmwareObject.vmxPathList.forEach(function (vmxPath){
@@ -37,6 +37,8 @@ function searchVmxPath(searchWord) {
   }
 
   function listAllLiveVmxPath() {
+    loadPlugin.readUtoolsDB()
+    loadPlugin.checkParameter()
     console.log(`vmwareLivePathList: ${vmwareObject.vmwareLivePathList}`)
     let vmwareLivePathList = [];
     vmwareObject.vmwareLivePathList.forEach(function (vmxPath){
@@ -64,11 +66,15 @@ function vmwareOpen(vmxPath) {
     /*
     以open的方法打开 被选择的虚拟机, -p
         */
-    let execCmd = `"${vmwareObject.vmProgramPath}\\vmware.exe" -p "${vmxPath}"`;
-    if(vmwareObject.isNotificationBar == 'checked'){
-        utools.showNotification(vmxPath + '打开中')
+    try {
+      let execCmd = `"${vmwareObject.vmProgramPath}\\vmware.exe" -p "${vmxPath}"`;
+      if(vmwareObject.isNotificationBar == 'checked'){
+          utools.showNotification(vmxPath + '打开中')
+      }
+      childProcess.execSync(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
+    }catch(e){
+      console.log("Error: vmwareOpen")
     }
-    childProcess.execSync(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
     window.utools.outPlugin()
 }
 
@@ -76,30 +82,47 @@ function vmwareRun(vmxPath) {
     /*
     以 vmrun 开启虚拟机
      */
-    let execCmdTmp = `"${vmwareObject.vmProgramPath}\\vmrun.exe" start "${vmxPath}"`
-    let execCmdVmrun = vmwareObject.isBackground ? `${execCmdTmp}  nogui`: `${execCmdTmp}  gui`
-    if(vmwareObject.isNotificationBar == 'checked'){
-      message = vmwareObject.isBackground ? vmxPath + '打开中(nogui)' : vmxPath + '打开中(gui)'
-      utools.showNotification(message)
+    try {
+      let execCmdTmp = `"${vmwareObject.vmProgramPath}\\vmrun.exe" start "${vmxPath}"`
+      let execCmdVmrun = vmwareObject.isBackground ? `${execCmdTmp}  nogui`: `${execCmdTmp}  gui`
+      if(vmwareObject.isNotificationBar == 'checked'){
+        message = vmwareObject.isBackground ? vmxPath + '打开中(nogui)' : vmxPath + '打开中(gui)'
+        utools.showNotification(message)
+      }
+      childProcess.execSync(execCmdVmrun, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
+    } catch (e) {
+      console.log("Error: vmwareRun")
     }
-    childProcess.execSync(execCmdVmrun, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
     window.utools.outPlugin()
 }
 
 
 
 function vmwareStop(vmxPath) {
-  /*
-  以open的方法打开 被选择的虚拟机, -p
-      */
-  let execCmd = `"${vmwareObject.vmProgramPath}\\vmrun.exe" stop "${vmxPath}"`;
-  if(vmwareObject.isNotificationBar == 'checked'){
-      utools.showNotification(vmxPath + '关闭中')
-  }
-  childProcess.execSync(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
+    try {
+      let execCmd = `"${vmwareObject.vmProgramPath}\\vmrun.exe" stop "${vmxPath}"`;
+      if(vmwareObject.isNotificationBar == 'checked'){
+          utools.showNotification(vmxPath + '关闭中')
+      }
+      childProcess.execSync(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
+    } catch(e) {
+      console.log("Error: vmwareStop")
+    }
   window.utools.outPlugin()
 }
 
+function vmwareSuspend(vmxPath){
+  try {
+    let execCmd = `"${vmwareObject.vmProgramPath}\\vmrun.exe" suspend "${vmxPath}"`;
+    if(vmwareObject.isNotificationBar == 'checked'){
+        utools.showNotification(vmxPath + '挂起中')
+    }
+    childProcess.execSync(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
+  } catch(e) {
+    console.log("Error: vmwareSuspend")
+  }
+  window.utools.outPlugin()
+}
 
 module.exports = {
     listAllVmxPath: listAllVmxPath,
@@ -108,5 +131,6 @@ module.exports = {
     vmwareRun: vmwareRun,
     listAllLiveVmxPath: listAllLiveVmxPath,
     searchLiveVmxPath: searchLiveVmxPath,
-    vmwareStop: vmwareStop
+    vmwareStop: vmwareStop,
+    vmwareSuspend: vmwareSuspend
 }
