@@ -68,7 +68,7 @@ function vmwareOpen(vmxPath) {
         */
     try {
       let execCmd = `"${vmwareObject.vmProgramPath}\\vmware.exe" -p "${vmxPath}"`;
-      if(vmwareObject.isNotificationBar == 'checked'){
+      if(vmwareObject.isNotificationBar === 'true'){
           utools.showNotification(vmxPath + '打开中')
       }
       childProcess.exec(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
@@ -85,7 +85,7 @@ function vmwareRun(vmxPath) {
     try {
       let execCmdTmp = `"${vmwareObject.vmProgramPath}\\vmrun.exe" start "${vmxPath}"`
       let execCmdVmrun = vmwareObject.isBackground ? `${execCmdTmp}  nogui`: `${execCmdTmp}  gui`
-      if(vmwareObject.isNotificationBar == 'checked'){
+      if(vmwareObject.isNotificationBar === 'true'){
         message = vmwareObject.isBackground ? vmxPath + '打开中(nogui)' : vmxPath + '打开中(gui)'
         utools.showNotification(message)
       }
@@ -101,7 +101,7 @@ function vmwareRun(vmxPath) {
 function vmwareStop(vmxPath) {
     try {
       let execCmd = `"${vmwareObject.vmProgramPath}\\vmrun.exe" stop "${vmxPath}"`;
-      if(vmwareObject.isNotificationBar == 'checked'){
+      if(vmwareObject.isNotificationBar === 'true'){
           utools.showNotification(vmxPath + '关闭中')
       }
       childProcess.exec(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
@@ -114,7 +114,7 @@ function vmwareStop(vmxPath) {
 function vmwareSuspend(vmxPath){
   try {
     let execCmd = `"${vmwareObject.vmProgramPath}\\vmrun.exe" suspend "${vmxPath}"`;
-    if(vmwareObject.isNotificationBar == 'checked'){
+    if(vmwareObject.isNotificationBar === 'true'){
         utools.showNotification(vmxPath + '挂起中')
     }
     childProcess.exec(execCmd, {encoding: loadPlugin.binaryEncoding, windowsHide: true});

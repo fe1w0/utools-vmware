@@ -3,33 +3,41 @@ const loadPlugin = require('./loadplugin')
 
 
 function settingUI() {
-    // 若之前已经 
     /*
     Ref:
     https://github.com/mohuishou/utools/blob/318802607f92f6aee45198d4996e36b4897c11b1/helper/src/config/setting.ts#L80
     */
-//    删除 settings 
-    let setting = document.querySelector("#settings");
-    if (setting) setting.remove();
+    // 删除 settings 
+    document.getElementById('settings')?.remove()
+
     let body = document.querySelector("body");
     let layui = path.join(__dirname, "../node_modules/layui/dist/")
     let settings = document.createElement("div");
-
     // 需要注意的是，当插件从后台到前台时，utools.onPluginReady 不会再次启动
     // 添加 判断条件到 reset 中
-
     loadPlugin.readUtoolsDB()
     // \\ 的 BUG
     let uiVmxDirectory = loadPlugin.vmwareObject.vmxDirectory.replaceAll("\\", "\\\\")
     let uiVmProgramPath = loadPlugin.vmwareObject.vmProgramPath.replaceAll("\\", "\\\\")
-    let uiIsBackground = (loadPlugin.vmwareObject.isBackground === "true") ? true : false
-    let uiIsNotificationBar = (loadPlugin.vmwareObject.isNotificationBar === "true") ? true : false
+    
+    console.log(`loadPlugin.vmwareObject.isBackground:${loadPlugin.vmwareObject.isBackground}`)
+    console.log(`loadPlugin.vmwareObject.isNotificationBar:${loadPlugin.vmwareObject.isNotificationBar}`)
+
+    if (loadPlugin.vmwareObject.isBackground === "false") {
+        uiIsBackground = false
+    } else {
+        uiIsBackground = true
+    }
+
+    if (loadPlugin.vmwareObject.isNotificationBar === "false") {
+        uiIsNotificationBar = false
+    } else {
+        uiIsNotificationBar = true
+    }
+
+    console.log(uiIsBackground, uiIsNotificationBar)
     console.log(`uiVmxDirectory:${uiVmxDirectory}`)
     console.log(`uiVmProgramPath:${uiVmProgramPath}`)
-    console.log(uiIsBackground, uiIsNotificationBar)
-    console.log(`loadPlugin.vmwareObject.isNotificationBar:${loadPlugin.vmwareObject.isNotificationBar}`)
-    console.log(`loadPlugin.vmwareObject.isBackground:${loadPlugin.vmwareObject.isBackground}`)
-
     settings.innerHTML = `
         <link rel="stylesheet" href="${layui}css/layui.css"  media="all">
         <style>
@@ -82,14 +90,14 @@ function settingUI() {
                         <div class="layui-form-item">
                             <label class="layui-form-label">后台开启-默认关</label>
                             <div class="layui-input-block">
-                            <input type="checkbox" name="isBackground" value="true" 
+                            <input type="checkbox" name="isBackground"
                             lay-skin="switch"  lay-text="ON|OFF">
                             </div>
                         </div>
                         <div class="layui-form-item">
                             <label class="layui-form-label">通知栏-默认开</label>
                             <div class="layui-input-block">
-                            <input type="checkbox" name="isNotificationBar" value="true" 
+                            <input type="checkbox" name="isNotificationBar"
                             lay-skin="switch" lay-filter="config" lay-text="ON|OFF">
                             </div>
                         </div>
@@ -136,17 +144,16 @@ function settingUI() {
             var element = layui.element;
         });
         layui.form.on("submit(config)", function (data) {
-            console.log("submit")
+            console.log("submit:")
             window.updateConfig(data.field)
-            reFresh(data.field)
         });
 
         layui.form.val("vmware", {
             "vmxDirectory": "${uiVmxDirectory}",
             "vmProgramPath": "${uiVmProgramPath}",
             "isBackground": ${uiIsBackground},
-            "isNotificationBar": ${uiIsNotificationBar}
-        });
+            "isNotificationBar": ${uiIsNotificationBar},
+        })
     };
     document.querySelector(".link-one").onclick = (e) => {
         utools.shellOpenExternal(e.target.getAttribute("href"))
@@ -154,55 +161,40 @@ function settingUI() {
     document.querySelector(".link-two").onclick = (e) => {
         utools.shellOpenExternal(e.target.getAttribute("href"))
     }
-
-    function reFresh(data) {
-        console.log("reFresh")
-        console.log(data)
-        if (data.isBackground === "false") {
-            data.isBackground = false
-        }   
-        if (data.isNotificationBar === "false") {
-            data.isNotificationBar = false
-        }
-        layui.form.val("vmware", {
-            "vmxDirectory": data.vmxDirectory,
-            "vmProgramPath": data.vmProgramPath,
-            "isBackground": data.isBackground,
-            "isNotificationBar": data.isNotificationBar
-        });
-    }
     `;
 
     settings.append(script);
+
     body.append(settings);
 }
 
 
 window.updateConfig = function(data) {
-    // 更新数据库
+    // 更新数据库    
     utools.dbStorage.setItem('vmxDirectory', data.vmxDirectory)
     utools.dbStorage.setItem('vmProgramPath', data.vmProgramPath)
 
-
-    if (!data.isBackground) {
+    if (typeof(data.isBackground) === "undefined" || data.isBackground === "false" || data.isBackground === false) {
         data.isBackground = "false"
-        // alert(`data.isBackground:${data.isBackground}`)
-    };
+    } else {
+        data.isBackground = "true"
+    }
     utools.dbStorage.setItem('isBackground', data.isBackground)
-
-
-    if (!data.isNotificationBar) {
+    if (typeof(data.isNotificationBar) === "undefined" || data.isNotificationBar === "false" || data.isNotificationBar === false) {
         data.isNotificationBar = "false"
-    //    alert(`data.isNotificationBar:${data.isNotificationBar}`)
-    };
-
+    } else {
+        data.isNotificationBar = "true"
+    }
     utools.dbStorage.setItem('isNotificationBar', data.isNotificationBar)
-    if (data.isNotificationBar == "true"){
+
+    if (data.isNotificationBar === "true"){
         utools.showNotification('设置完成')
     }
-    setTimeout(() => {
-      utools.redirect('vmopen', '')
-    }, 200);
+    // setTimeout(() => {
+    //   utools.redirect('vmopen', '')
+    // }, 200);
+    utools.hideMainWindow()
+    utools.outPlugin()
   }
 
 module.exports = settingUI

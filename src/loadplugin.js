@@ -117,7 +117,6 @@ function setVmxPathList() {
 }
 
 
-
 function setVmwareLivePathList() {
   let searchCmd = `"${vmwareObject.vmProgramPath}\\vmrun.exe" list`
   try{
