@@ -35,7 +35,7 @@ utools插件: 快速开启虚拟机
 
 
 
-感谢 [lanyuanxiaoyao](https://yuanliao.info/u/lanyuanxiaoyao)、u_tools的帮助
+感谢 [lanyuanxiaoyao](https://yuanliao.info/u/lanyuanxiaoyao)、u_tools、[mohuishou](https://github.com/mohuishou/utools)的帮助
 
 # Update
 
@@ -45,3 +45,5 @@ utools插件: 快速开启虚拟机
 1.0.6 添加自定义开启和通知功能
 
 1.0.7 修改settingUI , 添加vmstop, 以及修补issue (弹窗和无效指令问题)
+
+1.0.8 release 时忘记install node_modules了
