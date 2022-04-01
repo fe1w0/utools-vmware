@@ -83,10 +83,18 @@ function vmwareRun(vmxPath) {
     以 vmrun 开启虚拟机
      */
     try {
-      let execCmdTmp = `"${vmwareObject.vmProgramPath}\\vmrun.exe" start "${vmxPath}"`
-      let execCmdVmrun = vmwareObject.isBackground ? `${execCmdTmp}  nogui`: `${execCmdTmp}  gui`
+      var execCmdTmp = `"${vmwareObject.vmProgramPath}\\vmrun.exe" start "${vmxPath}"`
+      if (vmwareObject.isBackground === 'true') {
+        var execCmdVmrun = `${execCmdTmp}  nogui`
+      } else {
+        var execCmdVmrun = `${execCmdTmp}  gui`
+      }
       if(vmwareObject.isNotificationBar === 'true'){
-        message = vmwareObject.isBackground ? vmxPath + '打开中(nogui)' : vmxPath + '打开中(gui)'
+        if (vmwareObject.isBackground === 'true') {
+          var message = vmxPath + '打开中(nogui)'
+        } else {
+          var message = vmxPath + '打开中(gui)'
+        }
         utools.showNotification(message)
       }
       childProcess.exec(execCmdVmrun, {encoding: loadPlugin.binaryEncoding, windowsHide: true});
